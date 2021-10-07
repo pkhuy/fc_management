@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block body %}
+
+<p>{{user}}</p>
+{% for staff in staffs %}
+    
+    <form id="post-form" method="POST" action="/home/staff/{{staff.id}}/">
+        
+
+            <input type="hidden" name="id" id="{{staff.id}}" value="{{staff.id}}">
+            <input type="submit" name="subbtn" value="staff {{staff.id}}">
+    </form>
+{% endfor %}
+
+{% endblock %}
