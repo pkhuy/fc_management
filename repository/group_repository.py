@@ -5,37 +5,21 @@ from typing import List
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
 from entities.group import Group
+
+
 class GroupRepository:
-    '''def execute(self):
-        if self.repository.find_by(self.email):
-            raise 'Email already exists'
-        user = self.factory_group()
-        return self.repository.create(user)
-
-    def factory_group(self) -> Group:
-        instance = Group(self.groupname)
-        return instance'''
-
     @classmethod
-    def insert_group(cls, groupname: str) -> GroupModel:
-        """
-        Insert data in user entity
-        :param  - name: person name
-                - password: user password
-        :return - tuple with new user inserted informations
-        """
-
-        # Creating a Return Tuple With Informations
-
+    def insert(cls, req: dict) -> Group:
         with DBConnectionHandler() as db_connection:
             try:
-                new_group = GroupModel(groupname=groupname)
+                new_group = GroupModel(
+                    name=req["name"])
                 db_connection.session.add(new_group)
                 db_connection.session.commit()
 
                 return Group(
-                    id=new_group.id, groupname=new_group.groupname
-                )
+                    id=new_group.id, name=new_group.name
+                ).get_as_json()
 
             except Exception as ex:
                 db_connection.session.rollback()
@@ -44,31 +28,70 @@ class GroupRepository:
             finally:
                 db_connection.session.close()
 
-        return None
-
     @classmethod
-    def select_user_group(cls, user_id: int) -> List[GroupModel]:
-        """
-        Select data in user entity by id and/or name
-        :param  - id: Id of the registry
-                - name: User name in database
-        :return - List with UsersModel selected
-        """
+    def get_all(cls) -> List[Group]:
         with DBConnectionHandler() as db_connection:
             try:
-                query_data = None
+                datas = (
+                    db_connection.session.query(GroupModel).all()
+                )
+                json_datas = {}
+                for data in datas:
+                    json_datas[data.name]=Group(data.id, data.name).get_as_json()
 
-                if user_id:
-                    # Select user by id
+                return json_datas
+
+            except NoResultFound:
+                return {}
+            except Exception as ex:
+                db_connection.session.rollback()
+                print(ex)
+                raise
+            finally:
+                db_connection.session.close()
+
+    @classmethod
+    def select_by_id(cls, id: int) -> Group:
+
+        with DBConnectionHandler() as db_connection:
+            try:
+                json_data = None
+
+                if id:
+                    # Select player by id
                     with DBConnectionHandler() as db_connection:
-                        data = text("""SELECT DISTINCT(groups.name)
-                                        FROM users, user_group, groups
-                                        WHERE users.id = {} 
-                                        AND users.id = user_group.user_id
-                                        AND user_group.group_id = groups.id""".format(user_id))
-                        query_data = [data]
+                        data = db_connection.session.query(
+                            GroupModel).filter_by(id=id).one()
+                        json_data = Group(
+                            data.id, data.name).get_as_json()
 
-                return query_data
+                return json_data
+
+            except NoResultFound:
+                return {}
+            except Exception as ex:
+                db_connection.session.rollback()
+                print(ex)
+                raise
+            finally:
+                db_connection.session.close()
+
+    @classmethod
+    def select_by_name(cls, name) -> Group:
+
+        with DBConnectionHandler() as db_connection:
+            try:
+                json_data = None
+
+                if id:
+                    # Select player by id
+                    with DBConnectionHandler() as db_connection:
+                        data = db_connection.session.query(
+                            GroupModel).filter_by(name=name).one()
+                        json_data = Group(
+                            data.id, data.name).get_as_json()
+
+                return json_data
 
             except NoResultFound:
                 return []
@@ -78,5 +101,3 @@ class GroupRepository:
                 raise
             finally:
                 db_connection.session.close()
-
-        return None

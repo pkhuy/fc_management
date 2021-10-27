@@ -45,9 +45,8 @@ c.execute("INSERT INTO group_permission(group_id, permission_id) VALUES (?, ?)",
     2, 25]
 )'''
 
-c.execute("INSERT INTO user_group(user_id, group_id) VALUES (?, ?)", [
-    2, 4]
-)
+c.execute("DELETE FROM user_group WHERE id=10")
+
 
 conn.commit()
 

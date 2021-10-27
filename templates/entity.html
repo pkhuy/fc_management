@@ -19,21 +19,20 @@
         {% if current_user.is_authenticated %}
             <p> admin huh </p>
         {% endif %}
-        {% for user in context["users"] %}
-            <p>1<p>
-            {% if 'GET' in context["permissions"] %}
-                <a href='/manage'>Create</a>
-            {% endif %}
-            {% if 'POST' in context["permissions"] %}
-                <a href='/manage'>View</a>
-            {% endif %}
-            {% if 'UPDATE' in context["permissions"] %}
-                <a href='/manage'>Change</a>
-            {% endif %}
-            {% if 'DELETE' in context["permissions"] %}
-                <a href='/manage'>Delete</a>
-            {% endif %}
+        {% for row in context["query"] %}
+            <p>{{row}}<p>
+            <a href='/{{context["entity"]}}/{{row["id"]}}'>Manage</a>
         {% endfor %}
+        <form action='/{{context["entity"]}}' method="POST">
+            {% for attribute in context["data"].keys() %}
+                {% if attribute == "id" %}
+                    <input type="hidden" name="id">
+                {% else %}
+                    <input type="text" name="{{attribute}}" placeholder="{{attribute}}">
+                {% endif %}
+            {% endfor %}
+            <input type="submit" value="Create">
+        </form>
         <script src="" async defer></script>
     </body>
 </html>

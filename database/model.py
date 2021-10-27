@@ -15,7 +15,11 @@ class User(Base, UserMixin):
     email = Column(String, nullable=False)
     password = Column(String)
     def __repr__(self) -> str:
-        return f"User('{self.name}', '{self.email}' )"
+        #return f"User('{self.name}', '{self.email}' )"
+        return f"{self.id}"
+        
+    def get_id(self):
+        return self.id
 
 class Group(Base):
     __tablename__ = "groups"
@@ -34,22 +38,25 @@ class Permission(Base):
 class UserGroup(Base):
     __tablename__ = "user_group"
 
-    user_id = Column(Integer, primary_key=True)
-    group_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    group_id = Column(Integer)
 
 
 class UserPermission(Base):
     __tablename__ = "user_permission"
 
-    user_id = Column(Integer, primary_key=True)
-    permission_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    permission_id = Column(Integer)
 
 
 class GroupPermission(Base):
     __tablename__ = "group_permission"
 
-    group_id = Column(Integer, primary_key=True)
-    permission_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
+    group_id = Column(Integer)
+    permission_id = Column(Integer)
 
 
 class League(Base):
@@ -78,10 +85,11 @@ class Player(Base):
 
 
 class LeagueFC(Base):
-    __tablename__ = "league_football_club"
+    __tablename__ = "league_fc"
 
-    league_id = Column(Integer, primary_key=True)
-    football_club_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
+    league_id = Column(Integer)
+    fc_id = Column(Integer)
 
 '''    
 UserGroup = Table("user_group", Base.metadata,

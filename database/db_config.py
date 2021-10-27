@@ -27,3 +27,15 @@ class DBConnectionHandler:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.session.close()  # pylint: disable=no-member
 
+    def execute(self, exe_data):
+        with self:
+            try:
+                return self.get_engine().execute(exe_data)
+
+            except Exception as ex:
+                self.session.rollback()
+                print(ex)
+                raise
+            finally:
+                self.session.close()
+
