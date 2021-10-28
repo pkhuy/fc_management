@@ -9,6 +9,9 @@ from flask_login import login_manager
 import bcrypt
 
 class Auth:
+    user_repository = UserRepository
+    user_group_repository = UserGroupRepository
+    permission_repository = PermissionRepository
     def __init__(self, user_repository=UserRepository,
                  permission_repository=PermissionRepository,
                  user_group_repository=UserGroupRepository):
@@ -28,36 +31,14 @@ class Auth:
         email = request['email']
         password = request['password']
         
-        new_user = self.user_repository.insert_user(name=name, email=email, password=password)
-        group_response = self.user_group_repository.insert(new_user.id, 4) #4 for register user group
+        new_user = self.user_repository.insert_user({"name":name, "email":email, "password":password})
+        group_response = self.user_group_repository.insert(new_user["id"], 4) #4 for register user group
 
         return {"data": new_user}
 
     def login(self, data):
         user = self.user_repository.select(data)
         return user
-
-    #have not used
-    def insert_user_permission(self, request):
-        name = request['name']
-        entity = request['entity']
-
-        response = None
-        validate_entry = isinstance(name, str)
-
-        if validate_entry:
-            response = self.permission_repository.insert_user_permission(name, entity)
-
-        return {"success": validate_entry, "data": response}
-
-    #have not use
-    def get_user_permission(self, request):
-        user = request
-        entity = 'users'
-        response = None
-
-        response = self.permission_repository.select(user, entity)
-        return response
 
     def loaded_user(self, user_id):
         return self.user_repository.loaded_user(user_id)

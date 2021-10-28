@@ -97,17 +97,13 @@ def login():
             return 'Missing Email', 401
         if not password:
             return 'Missing Password', 401
-        data = {
-            "email": email,
-            "password": password
-        }
 
-        res = Auth().login(data)
+        res = Auth().login(request.get_json())
 
         if res is not None:
             login_user(res)
             token = jwt.encode({
-                "email": data["email"],
+                "email": request.get_json()["email"],
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=1)},
                 secret_key
             )

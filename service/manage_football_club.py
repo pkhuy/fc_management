@@ -22,7 +22,7 @@ class ManageFootballClub:
     def create(self, data):
         cur_user_per = self.read_per(data)
 
-        if 'POST' in cur_user_per:
+        if 'create' in cur_user_per:
             res = self.football_club_repository.insert(data)
             return res
         else:
@@ -35,7 +35,7 @@ class ManageFootballClub:
     def update(self, data):
         cur_user_per = self.read_per(data)
 
-        if 'UPDATE' in cur_user_per:
+        if 'change' in cur_user_per:
             res = self.football_club_repository.update(data)
             return res
         else:
@@ -46,7 +46,7 @@ class ManageFootballClub:
 
     def delete(self, data):
         cur_user_per = self.read_per(data)
-        if "DELETE" in cur_user_per:
+        if "delete" in cur_user_per:
             res = self.football_club_repository.drop_row(id)
             return res
         return {"res": "u dont have enough permission"}

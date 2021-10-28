@@ -24,10 +24,20 @@ class ManageUser:
         return self.user_repository.select_by_id(id)
 
     def update(self, req):
+        sv_data = {
+            "id": req["id"],
+            "name": req["name"],
+            "email": req["email"],
+            "password": req["password"]
+        }
+        #self update
+        if req["current_user_id"] == req["id"]:
+            return self.user_repository.update[sv_data]
+        #not self upadte
         cur_user_group = self.user_group_repository.select_user_group(
             int(req["current_user_id"]))
         if 'admin' in cur_user_group:
-            res = self.user_repository.update(req)
+            res = self.user_repository.update(sv_data)
             return res
         if 'manager' in cur_user_group:
             user_managed_group = self.user_group_repository.select_user_group(
@@ -37,14 +47,14 @@ class ManageUser:
             if 'admin' in user_managed_group or 'manager' in user_managed_group:
                 return {"res": "u dont have enough permission"}
             else:
-                res = self.user_repository.update(req)
+                res = self.user_repository.update(sv_data)
                 return res
 
         return {"res": "u dont have enough permission"}
 
-    def get_cur_user_permission(self, req):
-        user_id = req["current_user_id"]
-        entity = req["entity"]
+    def get_cur_user_permission(self, data):
+        user_id = data["current_user_id"]
+        entity = data["entity"]
         response = None
 
         response = self.user_permission_repository.select_permission_entity(
@@ -56,6 +66,27 @@ class ManageUser:
 
     
     def delete(self, data):
+        cur_user_group = self.user_group_repository.select_user_group(
+            int(data["current_user_id"]))
+        if 'admin' in cur_user_group:
+            res = self.user_repository.drop_row(data["id"])
+            self.user_group_repository.drop_row(data["id"])
+            self.user_permission_repository.drop_row(data["id"])
+            return res
+        if 'manager' in cur_user_group:
+            user_managed_group = self.user_group_repository.select_user_group(
+                data["id"]
+            )
+            print(user_managed_group)
+            if 'admin' in user_managed_group or 'manager' in user_managed_group:
+                return {"res": "u dont have enough permission"}
+            else:
+                res = self.user_repository.drop_row(data["id"])
+                self.user_group_repository.drop_row(data["id"])
+                self.user_permission_repository.drop_row(data["id"])
+                return res
+
+        return {"res": "u dont have enough permission"}
         cur_user_per = self.get_cur_user_permission(data)
         if 'DELETE' in cur_user_per:
             res = self.user_repository.drop_row(data["id"])
@@ -66,3 +97,18 @@ class ManageUser:
 
     def get_group_by_user_id(self, user_id):
         return self.user_group_repository.select_user_group(user_id=user_id)
+
+    def create_per():
+        pass
+
+    def read_all_per():
+        pass
+
+    def update_per():
+        pass
+
+    def delete_per():
+        pass
+
+
+        

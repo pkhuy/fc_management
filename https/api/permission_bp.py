@@ -27,7 +27,7 @@ def entity():
         return jsonify({"HTTP Response": 204, "content": "U must login"})
 
 
-@permission_bp.route('/<int:id>', methods=['GET', 'POST'])
+@permission_bp.route('/<int:id>', methods=['GET', 'POST', 'DELETE'])
 def manage(id):
     if current_user.is_authenticated:
         if request.method == "PUT":

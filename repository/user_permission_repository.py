@@ -37,23 +37,20 @@ class UserPermissionRepository:
                 db_connection.session.close()
 
     @classmethod
-    def select(cls, data) -> List[UserPermission]:
+    def select(cls, sv_data) -> List[UserPermission]:
         with DBConnectionHandler() as db_connection:
             try:
-                datas = (
+                rp_data = (
                     db_connection.session.query(UserPermissionModel).filter_by(
-                        user_id=data["user_id"], permission_id=data["permission_id"]
-                    )
+                        user_id=sv_data["user_id"], permission_id=sv_data["permission_id"]
+                    ).one()
                 )
-                json_datas = []
-                for data in datas:
-                    json_datas.append(
-                        UserPermission(data.id, data.user_id, data.permission_id).get_as_json())
+                json_datas = UserPermission(rp_data.id, rp_data.user_id, rp_data.permission_id).get_as_json()
 
                 return json_datas
 
             except NoResultFound:
-                return []
+                return None
             except Exception as ex:
                 db_connection.session.rollback()
                 print(ex)
@@ -71,18 +68,36 @@ class UserPermissionRepository:
                 json_datas = []
                 for data in datas:
                     json_datas.append(
-                        UserPermission(data.id, data.user_id, data.group_id).get_as_json())
+                        UserPermission(data.id, data.user_id, data.permission_id).get_as_json())
 
                 return json_datas
 
             except NoResultFound:
-                return []
+                return None
             except Exception as ex:
                 db_connection.session.rollback()
                 print(ex)
                 raise
             finally:
                 db_connection.session.close()
+
+    @classmethod
+    def select_by_id(cls, user_id: int, permission_id) :
+        db_conn = DBConnectionHandler()
+        data = db_conn.execute(text("""SELECT * FROM user_permission WHERE user_id={} AND permission_id={}"""
+                        .format(user_id, permission_id))).fetchone()
+        json_data=UserPermission(data.id, data.user_id, data.permission_id).get_as_json()
+        return json_data
+
+    @classmethod
+    def select_by_user_id(cls, user_id: int) :
+        db_conn = DBConnectionHandler()
+        datas = db_conn.execute(text("""SELECT * FROM user_permission WHERE user_id={}"""
+                        .format(user_id))).fetchall()
+        json_data = {}
+        for data in datas:
+            json_data["id "+ str(data.id)]=UserPermission(data.id, data.user_id, data.permission_id).get_as_json()
+        return json_data
 
     @classmethod
     def select_user_group(cls, user_id: int) -> List[GroupModel]:
@@ -155,7 +170,6 @@ class UserPermissionRepository:
     def drop_row(cls, user_id):
 
         with DBConnectionHandler() as db_connection:
-            dropable = False
             try:
                 if id:
                     data = db_connection.session.query(
@@ -164,7 +178,26 @@ class UserPermissionRepository:
                         db_connection.session.delete(delete_data)
                         db_connection.session.commit()
             except NoResultFound:
-                return dropable
+                return None
+            except Exception as ex:
+                db_connection.session.rollback()
+                print(ex)
+                raise
+            finally:
+                db_connection.session.close()
+
+    @classmethod
+    def drop_row_by_id(cls, id):
+
+        with DBConnectionHandler() as db_connection:
+            try:
+                if id:
+                    rp_data = db_connection.session.query(
+                        UserPermissionModel).filter_by(id=id).one()
+                    db_connection.session.delete(rp_data)
+                    db_connection.session.commit()
+            except NoResultFound:
+                return None
             except Exception as ex:
                 db_connection.session.rollback()
                 print(ex)

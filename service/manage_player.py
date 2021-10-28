@@ -19,7 +19,7 @@ class ManagePlayer:
     def create(self, data):
         cur_user_per = self.read_per(data)
         join_fc = self.fc_repository.select_by_id(data["fc_id"])
-        if 'POST' in cur_user_per:
+        if 'create' in cur_user_per:
             if join_fc is None:
                 return "No found this fc", 400
             if join_fc["quantity"] == 0:
@@ -45,7 +45,7 @@ class ManagePlayer:
     def update(self, data):
         cur_user_per = self.read_per(data)
 
-        if 'UPDATE' in cur_user_per:
+        if 'change' in cur_user_per:
             res = self.player_repository.update(data)
             return res
         else:
@@ -53,7 +53,7 @@ class ManagePlayer:
 
     def delete(self, data):
         cur_user_per = self.read_per(data)
-        if 'DELETE' in cur_user_per:
+        if 'delete' in cur_user_per:
             out_player = self.read_by_id(id)
             out_fc = self.fc_repository.select_by_id(out_player["fc_id"])
             self.fc_repository.update({

@@ -13,12 +13,13 @@ class UserRepository:
             try:
                 hash_pass = bcrypt.hashpw(
                     data["password"].encode('utf-8'), bcrypt.gensalt())
-                new_user = UserModel(name=data["name"], email=data["email"], password=hash_pass)
+                new_user = UserModel(
+                    name=data["name"], email=data["email"], password=hash_pass)
                 db_connection.session.add(new_user)
                 db_connection.session.commit()
                 return User(
                     id=new_user.id, name=new_user.name, email=new_user.email
-                )
+                ).get_as_json()
             except Exception as ex:
                 db_connection.session.rollback()
                 print(ex)
@@ -30,9 +31,10 @@ class UserRepository:
     def select_all(cls) -> List[User]:
         db_conn = DBConnectionHandler()
         datas = db_conn.execute(text("""SELECT * FROM users"""))
-        print(datas)
+        print(type(datas))
         json_datas = {}
         for data in datas:
+            print(type(data))
             json_datas[str(data.name)] = User(
                 data.id, data.name, data.email).get_as_json()
         return json_datas
@@ -64,53 +66,21 @@ class UserRepository:
 
     @classmethod
     def select_by_id(cls, id: int) -> User:
-
-        with DBConnectionHandler() as db_connection:
-            try:
-                json_data = None
-
-                if id:
-                    # Select player by id
-                    with DBConnectionHandler() as db_connection:
-                        data = db_connection.session.query(
-                            UserModel).filter_by(id=id).one()
-                        json_data = User(
-                            data.id, data.name, data.email, data.password).get_as_json()
-
-                return json_data
-
-            except NoResultFound:
-                return []
-            except Exception as ex:
-                db_connection.session.rollback()
-                print(ex)
-                raise
-            finally:
-                db_connection.session.close()
+        db_conn = DBConnectionHandler()
+        data = db_conn.execute(text("""SELECT * FROM users WHERE id={}""".format(id))).fetchone()
+        json_data = User(id, data.name, data.email, data.password).get_as_json()
+        return json_data
 
     @classmethod
     def select_by_email(cls, email: str) -> User:
-
-        with DBConnectionHandler() as db_connection:
-            try:
-                json_data = None
-
-                if email:
-                    data = db_connection.session.query(
-                        UserModel).filter_by(email=email).one()
-                    json_data = User(
-                        data.id, data.name).get_as_json()
-                    print(json_data)
-                return json_data
-
-            except NoResultFound:
-                return None
-            except Exception as ex:
-                db_connection.session.rollback()
-                print(ex)
-                raise
-            finally:
-                db_connection.session.close()
+        db_conn = DBConnectionHandler()
+        data = db_conn.execute(
+            text("""SELECT * FROM users WHERE email='{}'""".format(email))).fetchone()
+        if data is None:
+            return None        
+        return User(id, data.name, data.email,
+                         data.password).get_as_json()
+        
 
     @classmethod
     def loaded_user(cls, id: int) -> UserModel:

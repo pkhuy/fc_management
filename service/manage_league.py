@@ -19,7 +19,7 @@ class ManageLeague:
     def create(self, data):
         cur_user_per = self.read_per(data)
 
-        if 'POST' in cur_user_per:
+        if 'create' in cur_user_per:
             res = self.league_repository.insert(data)
             return res
         else:
@@ -32,7 +32,7 @@ class ManageLeague:
     def update(self, data):
         cur_user_per = self.read_per(data)
 
-        if 'UPDATE' in cur_user_per:
+        if 'change' in cur_user_per:
             res = self.league_repository.update(data)
             return res
         else:
@@ -43,7 +43,7 @@ class ManageLeague:
 
     def delete(self, data):
         cur_user_per = self.read_per(data)
-        if 'DELETE' in cur_user_per:
+        if 'delete' in cur_user_per:
             self.league_fc_repository.drop_row(data["id"])
             res = self.league_repository.drop_row(data["id"])
             return res
