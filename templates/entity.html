@@ -48,19 +48,36 @@
             
         .container {   
                 padding: 25px;   
-                background-color: lightblue;  
+                background-color: lightblue;
+                margin: 10px;  
             }   
+
+        .attr-container{
+            padding: 1px;   
+            background-color: white;
+            margin: 10px;
+            border: 1px solid black;
+        }
         </style> 
     </head>
     <body>
         <div class="container">
         {% if current_user.is_authenticated %}
+            <h1>List of {{context["entity"]}} </h1>
             {% for row in context.keys() %}
                 {% if row != "entity" %}
-                    <p>{{row}}<p>
-                    <a href='/{{context["entity"]}}/{{context[row]["id"]}}'>Manage</a>
+                    <div class="attr-container">
+                        <a href='/{{context["entity"]}}/{{context[row]["id"]}}'>{{row}}</a>
+                    </div>
                 {% endif %}
             {% endfor %}
+        {% else %}
+            <p> You must login </p>
+            <a href="/login">Login</a>
+        {% endif %}
+        </div>
+        <div class="container">
+            <h2>Create new</h2>
             <form action="/{{context['entity']}}", method="POST">
                 {% for row in context[context|first] %}
                     {% if row != "id" %}
@@ -68,11 +85,8 @@
                         <input type="text" name="{{row}}" placeholder="{{row}}">
                     {% endif %}
                 {% endfor %}
+                <input type="submit" name="act" value="Create">
             </form>
-        {% else %}
-            <p> You must login </p>
-            <a href="/login">Login</a>
-        {% endif %}
         </div>
         <script src="" async defer></script>
     </body>
