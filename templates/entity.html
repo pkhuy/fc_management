@@ -11,28 +11,69 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="">
+        <style>   
+        Body {  
+        font-family: Calibri, Helvetica, sans-serif;  
+        background-color: pink;  
+        }  
+        button {   
+            background-color: #4CAF50;   
+            width: 100%;  
+                color: orange;   
+                padding: 15px;   
+                margin: 10px 0px;   
+                border: none;   
+                cursor: pointer;   
+                }   
+        form {   
+                border: 3px solid #f1f1f1;   
+            }   
+        input[type=text], input[type=password] {   
+                width: 100%;   
+                margin: 8px 0;  
+                padding: 12px 20px;   
+                display: inline-block;   
+                border: 2px solid green;   
+                box-sizing: border-box;   
+            }  
+        button:hover {   
+                opacity: 0.7;   
+            }   
+        .cancelbtn {   
+                width: auto;   
+                padding: 10px 18px;  
+                margin: 10px 5px;  
+            }   
+                
+            
+        .container {   
+                padding: 25px;   
+                background-color: lightblue;  
+            }   
+        </style> 
     </head>
     <body>
-        <!--[if lt IE 7]>
-            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
-        <![endif]-->
+        <div class="container">
         {% if current_user.is_authenticated %}
-            <p> admin huh </p>
-        {% endif %}
-        {% for row in context["query"] %}
-            <p>{{row}}<p>
-            <a href='/{{context["entity"]}}/{{row["id"]}}'>Manage</a>
-        {% endfor %}
-        <form action='/{{context["entity"]}}' method="POST">
-            {% for attribute in context["data"].keys() %}
-                {% if attribute == "id" %}
-                    <input type="hidden" name="id">
-                {% else %}
-                    <input type="text" name="{{attribute}}" placeholder="{{attribute}}">
+            {% for row in context.keys() %}
+                {% if row != "entity" %}
+                    <p>{{row}}<p>
+                    <a href='/{{context["entity"]}}/{{context[row]["id"]}}'>Manage</a>
                 {% endif %}
             {% endfor %}
-            <input type="submit" value="Create">
-        </form>
+            <form action="/{{context['entity']}}", method="POST">
+                {% for row in context[context|first] %}
+                    {% if row != "id" %}
+                        <label> {{row}} </label>
+                        <input type="text" name="{{row}}" placeholder="{{row}}">
+                    {% endif %}
+                {% endfor %}
+            </form>
+        {% else %}
+            <p> You must login </p>
+            <a href="/login">Login</a>
+        {% endif %}
+        </div>
         <script src="" async defer></script>
     </body>
 </html>

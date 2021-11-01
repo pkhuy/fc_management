@@ -1,23 +1,31 @@
 from flask import Flask, flash, request, jsonify, render_template, redirect, make_response
-from service.auth import Auth
-import jwt
-import datetime
+from service.auth import Auth, session
 from flask_login import current_user, LoginManager, login_user, current_user, logout_user, login_required
 from functools import wraps
 from flask.blueprints import Blueprint
+from itsdangerous import BadSignature
+import jwt
 
-secret_key = '5791628bb0b13ce0c676dfde280ba245'
+secret_key = 'secretkey'
 
 auth_bp = Blueprint("auth_bp", __name__, static_folder="static", template_folder="templates")
 
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.args.get('token')
+        token = session["token"]
+        print(token)
         if not token:
             return jsonify({"message": "Token is missing!"}), 403
         try:
-            data = jwt.decode(token, secret_key)
+            data = jwt.decode(token, 'secretkey', algorithm="HS256")
+            print(data)
+        except jwt.ExpiredSignatureError:
+            return False, 'Token has been expired. Please log in again.', {}
+        except jwt.InvalidTokenError:
+            return False, 'Invalid token. Please log in again.', {}
+        except BadSignature:
+            return False, 'invalid token', {}
         except:
             logout_user()
             return jsonify({"message": "Token is invalid"}), 403
@@ -99,22 +107,15 @@ def login():
             return 'Missing Password', 401
 
         res = Auth().login(request.get_json())
-
-        if res is not None:
-            login_user(res)
-            token = jwt.encode({
-                "email": request.get_json()["email"],
-                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=1)},
-                secret_key
-            )
-
-            return jsonify({"token": token})
-        else:
-            flash('Login Unsuccessful. Please check email and password', 'danger')
+        login_user(res)
+        
+        flash('Login Unsuccessful. Please check email and password', 'danger')
+        return "login successfully", 200
     else:
         return "Don't have that method. Pls try again", 500
     
 @auth_bp.route("/logout")
+@login_required
 def logout():
     logout_user()
     return "loged out"

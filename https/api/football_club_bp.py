@@ -1,13 +1,14 @@
 from flask import Blueprint, request, render_template, flash, redirect, jsonify
 from flask_login import current_user
 from service.manage_football_club import ManageFootballClub
-
+from https.api.auth_bp import token_required
 football_club_bp = Blueprint("football_club_bp", __name__)
 
 fc_service = ManageFootballClub()
 
 
 @football_club_bp.route('', methods=['GET', 'POST'])
+@token_required
 def entity():
     if current_user.is_authenticated:
         if request.method == "POST":
@@ -31,6 +32,7 @@ def entity():
         return jsonify({"HTTP Response": 204, "content": "U must login"})
 
 @football_club_bp.route('/<int:id>', methods=['GET', 'PUT', 'DELETE', 'POST'])
+@token_required
 def manage(id):
     if current_user.is_authenticated:
         if request.method == "PUT":

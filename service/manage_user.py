@@ -87,13 +87,6 @@ class ManageUser:
                 return res
 
         return {"res": "u dont have enough permission"}
-        cur_user_per = self.get_cur_user_permission(data)
-        if 'DELETE' in cur_user_per:
-            res = self.user_repository.drop_row(data["id"])
-            self.user_group_repository.drop_row(data["id"])
-            self.user_permission_repository.drop_row(data["id"])
-            return res
-        return {"res": "u dont have enough permission"}
 
     def get_group_by_user_id(self, user_id):
         return self.user_group_repository.select_user_group(user_id=user_id)

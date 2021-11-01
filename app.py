@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, flash, request, jsonify, render_template, redirect
 from flask.helpers import url_for
 from service.auth import Auth

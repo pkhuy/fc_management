@@ -32,7 +32,7 @@ def entity():
         return jsonify({"HTTP Response": 204, "content": "U must login"})
 
 
-@league_bp.route('/<int:id>', methods=['GET', 'POST', 'DELETE'])
+@league_bp.route('/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 def manage(id):
     if current_user.is_authenticated:
         if request.method == "PUT":

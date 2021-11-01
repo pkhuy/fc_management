@@ -66,18 +66,30 @@ def register():
     if current_user.is_authenticated:
         return redirect('/home')
     if request.method == "POST":
-        req = {
-            "name": request.form["name"],
-            "email": request.form['email'],
-            "password": request.form['password'],
-        }
-        validate_email = Auth().check_email_existed(req["email"])
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+        if not name:
+            return 'Missing Name', 401
+        if not email:
+            return 'Missing Email', 401
+        if not password:
+            return 'Missing Password', 401
+        #chua format
+
+        validate_email = Auth().check_email_existed(email)
         if validate_email:
+            req = {
+                "name": name,
+                "email": email,
+                "password": password,
+            }
             res = Auth().register(req)
-            return redirect('/login')
+            return redirect("/login")
         else:
             flash('Regist Unsuccessful. This email has been used')
-            return redirect('/register')
+            return 'This email has existed', 400
+
     else:
         return render_template("register.html")
 
@@ -85,29 +97,31 @@ def register():
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == "POST":
-        req = {
-            "email": request.form['email'],
-            "password": request.form['password']
-        }
+        email = request.form['email']
+        password = request.form['password']
+        if not email:
+            return 'Missing Email', 401
+        if not password:
+            return 'Missing Password', 401
 
-        res = Auth().login(req)
+        res = Auth().login(request.form)
 
-        if res['success']:
-            login_user(res['data'][0])
+        if res is not None:
+            login_user(res)
             token = jwt.encode({
-                "email": req["email"],
+                "email": request.form["email"],
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=1)},
                 secret_key
             )
 
-            return jsonify({"token": token})
+            return redirect('/')
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
     else:
-        return render_template("login.html")
+        return render_template('login.html')
 
 
 @auth_bp.route("/logout")
 def logout():
     logout_user()
-    return redirect('/')
+    return redirect("/")

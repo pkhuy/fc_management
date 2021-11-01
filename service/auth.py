@@ -5,8 +5,11 @@ from repository.user_group_repository import UserGroupRepository
 from repository.user_repository import UserRepository
 from repository.permission_repository import PermissionRepository
 from flask_login import login_manager
-
+from flask import session
+import jwt
 import bcrypt
+import datetime
+
 
 class Auth:
     user_repository = UserRepository
@@ -38,7 +41,17 @@ class Auth:
 
     def login(self, data):
         user = self.user_repository.select(data)
-        return user
+        if user is not None:
+            token = jwt.encode({
+                "email": data["email"],
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1)},
+                "secretkey",
+                algorithm="HS256"
+            )
+            session["token"] = token
+            print(token)
+            return user
+        return None
 
     def loaded_user(self, user_id):
         return self.user_repository.loaded_user(user_id)

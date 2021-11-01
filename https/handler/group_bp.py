@@ -1,78 +1,57 @@
 from flask import Blueprint, request, render_template, flash, redirect
 from flask.json import jsonify
 from flask_login import current_user
-from service.auth import Auth
-from service.manage import Manage
+from service.manage_group import ManageGroup
 
 group_bp = Blueprint("group_bp", __name__)
+
+group_service = ManageGroup()
 
 
 @group_bp.route('', methods=['GET', 'POST'])
 def entity():
     if current_user.is_authenticated:
         if request.method == "POST":
-            id = request.form["id"]
-            #some func
-            valid_entry = isinstance(id, int)
-            req = {
-                "current_user": current_user,
-                "entity": "group"
+            if not request.form["name"]:
+                return "Missing group name", 400
+            json_data = {
+                "current_user_id": current_user.id,
+                "name": request.form["name"]
             }
-            permissions = Manage().get_user_permission(req)
-            context = {
-                "permissions": permissions,
-                "data": Manage().get_group_by_id(id)
-            }
-            return redirect('/<id>')
-            return render_template('manage.html', context=context)
-        else:
-            groups = Manage().get_all_group()
-            req = {
-                "current_user": current_user,
-                "entity": "group"
-            }
-            permissions = Manage().get_user_permission(req)
-            context = {
-                "permissions": permissions,
-                "entity": "groups",
-                "query": groups,
-                "data": Manage().get_group_by_id(1)
-            }
-            return render_template('entity.html', context=context)
+            new_group = group_service.create(json_data)
+            return render_template("response.html", context=new_group)
+        elif request.method == "GET":
+            groups = group_service.read_all()
+            groups["entity"] = "groups"
+            return render_template("entity.html", context=groups)
     else:
         return jsonify({"HTTP Response": 204, "content": "U must login"})
 
 
-@group_bp.route('/<int:id>', methods=['GET', 'POST'])
+@group_bp.route('/<int:id>', methods=['GET', 'POST', 'DELETE'])
 def manage(id):
     if current_user.is_authenticated:
         if request.method == "POST":
-            id = request.form["id"]
-            #some func
-            valid_entry = isinstance(id, int)
-            req = {
-                "current_user": current_user,
-                "entity": "group"
-            }
-            permissions = Manage().get_user_permission(req)
-            context = {
-                "permissions": permissions,
-                "data": Manage().get_group_by_id(id)
-            }
-            return redirect('/<int:id>')
-            return render_template('manage.html', context=context)
+            if request.form["act"] == "Update":
+                if not request.form["name"]:
+                    return "Missing group name", 400
+                json_update_data = {
+                    "id": id,
+                    "name": request.form["name"],
+                    "current_user_id": current_user.id
+                }
+                update_result = group_service.update(json_update_data)
+                return render_template("response.html", context=update_result)
+            elif request.method == "DELETE":
+                delete_result = group_service.delete({
+                    "id": id,
+                    "current_user_id": current_user.id,
+                    "entity": "group"
+                })
+                return render_template("response.html", context=delete_result)
         else:
-            #some func
-            valid_entry = isinstance(id, int)
-            req = {
-                "current_user": current_user,
-                "entity": "group"
-            }
-            permissions = Manage().get_user_permission(req)
-            context = {
-                "permissions": permissions,
-                "data": Manage().get_group_by_id(id)
-            }
-            return render_template('manage.html', context=context)
+            group = group_service.read_by_id(id)
+            group["entity"] = "groups"
+            return render_template("manage.html", context=group)
     else:
         return jsonify({"HTTP Response": 204, "content": "U must login"})
